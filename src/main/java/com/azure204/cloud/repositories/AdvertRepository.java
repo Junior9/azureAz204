@@ -2,6 +2,8 @@ package com.azure204.cloud.repositories;
 
 import java.util.ArrayList;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import com.azure.cosmos.ConsistencyLevel;
@@ -19,28 +21,24 @@ import com.azure.cosmos.models.CosmosQueryRequestOptions;
 import com.azure.cosmos.models.PartitionKey;
 import com.azure.cosmos.util.CosmosPagedIterable;
 import com.azure204.cloud.config.AccountSettings;
+import com.azure204.cloud.model.Advert;
 import com.azure204.cloud.model.User;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Repository
-public class UserRepository {
+public class AdvertRepository {
 
     private CosmosContainer container;
     private CosmosDatabase database;
     private CosmosClient client;
     private final String databaseName = "az204CosmoDb";
-    private final String containerName = "user";
+    private final String containerName = "advert";
     protected static Logger logger = LoggerFactory.getLogger(UserRepository.class);
 
-    public UserRepository(){
+    public AdvertRepository(){
         init();
     }
 
-
     public void init() {
-        System.out.println("Using Azure Cosmos DB endpoint: " + AccountSettings.HOST);
-
         ArrayList<String> preferredRegions = new ArrayList<String>();
         preferredRegions.add("West US");
 
@@ -65,9 +63,7 @@ public class UserRepository {
         container = database.getContainer(containerResponse.getProperties().getId());
     }
 
-
-
-    public CosmosPagedIterable<Object> getUsers() {
+    public CosmosPagedIterable<Object> getAdverts() {
 
         CosmosQueryRequestOptions queryOptions = new CosmosQueryRequestOptions();
         queryOptions.setQueryMetricsEnabled(true);
@@ -78,33 +74,33 @@ public class UserRepository {
         return result;
     }
 
-    public CosmosPagedIterable<Object> getUserById(String id) {
+    public CosmosPagedIterable<Object> getAdvertsById(String id) {
 
         CosmosQueryRequestOptions queryOptions = new CosmosQueryRequestOptions();
         queryOptions.setQueryMetricsEnabled(true);
 
         CosmosPagedIterable<Object> result = container.queryItems(
-            "SELECT * FROM c WHERE c.id = '" + id + "'", queryOptions, Object.class);
+            "SELECT * FROM c Where c.id = '" + id + "'", queryOptions, Object.class);
 
         return result;
     }
 
-    public void add(User user) {
-        CosmosItemResponse<User> respose = container.createItem(user);
+    public void add(Advert adv) {
+        CosmosItemResponse<Advert> respose = container.createItem(adv);
         if(respose.getStatusCode() == StatusCodes.CREATED ||  respose.getStatusCode() == StatusCodes.OK){
-            logger.info("[USER CREATED] -- " + user);
+            logger.info("[ADVERT CREATED] -- " + adv);
         }else{
-            logger.error("[USER NOT CREATED] -- " + user);
+            logger.error("[ADVERT NOT CREATED] -- " + adv);
         }
     }
 
 
-    public void updateUser(User user) {
-        CosmosItemResponse<User> respose =container.upsertItem(user);
+    public void updateAdvert(Advert advert) {
+        CosmosItemResponse<Advert> respose =container.upsertItem(advert);
         if(respose.getStatusCode() == StatusCodes.CREATED ||  respose.getStatusCode() == StatusCodes.OK){
-            logger.info("[USER UPDATED] -- " + user);
+            logger.info("[ADVERT UPDATED] -- " + advert);
         }else{
-            logger.error("[USER NOT UPDATED] -- " + user);
+            logger.error("[ADVERT NOT UPDATED] -- " + advert);
         }
     }
 
@@ -113,15 +109,16 @@ public class UserRepository {
             CosmosItemResponse<Object> respose = container.deleteItem(id, new PartitionKey(id), new CosmosItemRequestOptions());
 
             if(respose.getStatusCode() == StatusCodes.NO_CONTENT){
-                logger.info("[USER DELETED] id : -- " + id);
+                logger.info("[ADVERT DELETED] id : -- " + id);
             }else{
-                logger.error("[USER NOT DELETED]  id -- " + id);
+                logger.error("[ADVERT NOT DELETED]  id -- " + id);
             }
         }catch(Exception e){
-            logger.error("[USER NOT DELETED]  id -- " + id + " Error : " + e.getMessage());
+            logger.error("[ADVERT NOT DELETED]  id -- " + id + " Error : " + e.getMessage());
         }
         
     }
+
 
 
 }
