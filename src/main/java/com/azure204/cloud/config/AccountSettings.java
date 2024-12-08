@@ -29,8 +29,7 @@ public class AccountSettings {
     public static String MASTER_KEY =
             System.getProperty("ACCOUNT_KEY", 
                     StringUtils.defaultString(StringUtils.trimToNull(
-                            System.getenv().get("ACCOUNT_KEY")),
-                            "LDF46xrWfZIE9G431JHIYSCuhbYqasKqkXkmoDH5rBuLvJeA7NepDVDuKtCfQ1v55QB9MPNMUe1uACDb4p3JJQ=="));
+                            System.getenv().get("ACCOUNT_KEY")),""));
 
     public static String HOST =
             System.getProperty("ACCOUNT_HOST",
