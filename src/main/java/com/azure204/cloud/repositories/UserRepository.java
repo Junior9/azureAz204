@@ -18,7 +18,7 @@ import com.azure.cosmos.models.CosmosItemResponse;
 import com.azure.cosmos.models.CosmosQueryRequestOptions;
 import com.azure.cosmos.models.PartitionKey;
 import com.azure.cosmos.util.CosmosPagedIterable;
-import com.azure204.cloud.config.AccountSettings;
+import com.azure204.cloud.common.KeyVault;
 import com.azure204.cloud.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +31,7 @@ public class UserRepository {
     private CosmosClient client;
     private final String databaseName = "az204CosmoDb";
     private final String containerName = "user";
+    private KeyVault keyVaultSecrets;
     protected static Logger logger = LoggerFactory.getLogger(UserRepository.class);
 
     public UserRepository(){
@@ -39,15 +40,18 @@ public class UserRepository {
 
 
     public void init() {
-        System.out.println("Using Azure Cosmos DB endpoint: " + AccountSettings.HOST);
+        keyVaultSecrets = new KeyVault();
 
         ArrayList<String> preferredRegions = new ArrayList<String>();
         preferredRegions.add("West US");
 
+        String cosmoDbkey  = keyVaultSecrets.getSecret("cosmodb204key");
+        String cosmoDbHost  = keyVaultSecrets.getSecret("cosmodbhost");
+
         //  Create sync client
         client = new CosmosClientBuilder()
-            .endpoint(AccountSettings.HOST)
-            .key(AccountSettings.MASTER_KEY)
+            .endpoint(cosmoDbHost)
+            .key(cosmoDbkey)
             .preferredRegions(preferredRegions)
             .userAgentSuffix("CosmosDBJavaQuickstart")
             .consistencyLevel(ConsistencyLevel.EVENTUAL)

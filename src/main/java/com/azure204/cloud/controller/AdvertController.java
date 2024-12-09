@@ -1,5 +1,8 @@
 package com.azure204.cloud.controller;
 
+import java.net.URISyntaxException;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -8,9 +11,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.azure.cosmos.implementation.HttpConstants.StatusCodes;
 import com.azure.cosmos.util.CosmosPagedIterable;
+import com.azure204.cloud.dto.GenerateAiDTO;
 import com.azure204.cloud.model.Advert;
 import com.azure204.cloud.service.AdvertService;
+import com.azure204.cloud.service.ChatGtpService;
 
 import lombok.AllArgsConstructor;
 
@@ -19,6 +25,7 @@ import lombok.AllArgsConstructor;
 public class AdvertController {
 
     private AdvertService advertService;
+    private ChatGtpService chatGtpService;
 
     @GetMapping("/advert")
     public CosmosPagedIterable<Object> getAdverts(){
@@ -33,6 +40,13 @@ public class AdvertController {
     @PostMapping("/advert")
     public void add(@RequestBody Advert advert){
         this.advertService.addAdvert(advert);
+    }
+
+    @GetMapping("/ai/generate/{msn}")
+    public ResponseEntity<Advert> generateTextAI(@PathVariable String msn) throws URISyntaxException{
+        Advert advertCreated = this.chatGtpService.generate(msn);
+
+        return ResponseEntity.status(StatusCodes.CREATED).body(advertCreated);
     }
 
     @PutMapping("/advert")

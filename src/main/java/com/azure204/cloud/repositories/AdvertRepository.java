@@ -20,9 +20,10 @@ import com.azure.cosmos.models.CosmosItemResponse;
 import com.azure.cosmos.models.CosmosQueryRequestOptions;
 import com.azure.cosmos.models.PartitionKey;
 import com.azure.cosmos.util.CosmosPagedIterable;
-import com.azure204.cloud.config.AccountSettings;
+import com.azure204.cloud.common.KeyVault;
 import com.azure204.cloud.model.Advert;
-import com.azure204.cloud.model.User;
+
+
 
 @Repository
 public class AdvertRepository {
@@ -32,6 +33,7 @@ public class AdvertRepository {
     private CosmosClient client;
     private final String databaseName = "az204CosmoDb";
     private final String containerName = "advert";
+    private KeyVault keyVaultSecrets;
     protected static Logger logger = LoggerFactory.getLogger(UserRepository.class);
 
     public AdvertRepository(){
@@ -39,13 +41,17 @@ public class AdvertRepository {
     }
 
     public void init() {
+        keyVaultSecrets = new KeyVault();
         ArrayList<String> preferredRegions = new ArrayList<String>();
         preferredRegions.add("West US");
 
+        String cosmoDbkey  = keyVaultSecrets.getSecret("cosmodb204key");
+        String cosmoDbHost  = keyVaultSecrets.getSecret("cosmodbhost");
+
         //  Create sync client
         client = new CosmosClientBuilder()
-            .endpoint(AccountSettings.HOST)
-            .key(AccountSettings.MASTER_KEY)
+            .endpoint(cosmoDbHost)
+            .key(cosmoDbkey)
             .preferredRegions(preferredRegions)
             .userAgentSuffix("CosmosDBJavaQuickstart")
             .consistencyLevel(ConsistencyLevel.EVENTUAL)
@@ -85,12 +91,15 @@ public class AdvertRepository {
         return result;
     }
 
-    public void add(Advert adv) {
-        CosmosItemResponse<Advert> respose = container.createItem(adv);
+    public Advert add(Advert advert) {
+        CosmosItemResponse<Advert> respose = container.createItem(advert);
+        respose.getItem();
         if(respose.getStatusCode() == StatusCodes.CREATED ||  respose.getStatusCode() == StatusCodes.OK){
-            logger.info("[ADVERT CREATED] -- " + adv);
+            logger.info("[ADVERT CREATED] -- " + advert);
+            return respose.getItem();
         }else{
-            logger.error("[ADVERT NOT CREATED] -- " + adv);
+            logger.error("[ADVERT NOT CREATED] -- " + advert);
+            return null; 
         }
     }
 
