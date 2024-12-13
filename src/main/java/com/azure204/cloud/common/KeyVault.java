@@ -2,6 +2,7 @@ package com.azure204.cloud.common;
 
 import org.springframework.stereotype.Component;
 
+import com.azure.core.exception.ClientAuthenticationException;
 import com.azure.identity.DefaultAzureCredentialBuilder;
 import com.azure.security.keyvault.secrets.SecretClient;
 import com.azure.security.keyvault.secrets.SecretClientBuilder;
@@ -17,8 +18,15 @@ public class KeyVault {
 
 
     public String getSecret(String key){
-        KeyVaultSecret secret = secretClient.getSecret(key);
-        return secret.getValue();
+
+         try {
+            KeyVaultSecret secret = secretClient.getSecret("secret1");
+            return secret.getValue();
+        } catch (ClientAuthenticationException e) {
+            //Handle Exception
+            e.printStackTrace();
+            return "";
+        }
     }
 
 }
