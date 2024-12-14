@@ -20,7 +20,7 @@ public class KeyVault {
     public String getSecret(String key){
 
          try {
-            KeyVaultSecret secret = secretClient.getSecret("secret1");
+            KeyVaultSecret secret = secretClient.getSecret(key);
             return secret.getValue();
         } catch (ClientAuthenticationException e) {
             //Handle Exception

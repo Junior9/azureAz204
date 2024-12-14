@@ -10,24 +10,19 @@ import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure204.cloud.common.KeyVault;
 
-import jakarta.annotation.PostConstruct;
+import lombok.AllArgsConstructor;
 
 @Service
+@AllArgsConstructor
 public class UploadService {
 
-    private BlobServiceClient blobServiceClient;
     private KeyVault keyVault;
-
-    @PostConstruct
-    public void init(){
-        this.keyVault = new KeyVault();
-        this.blobServiceClient = new BlobServiceClientBuilder().connectionString(this.keyVault.getSecret("storageblobConnectString")).buildClient();
-    }
 
     public String uploadBlob(MultipartFile data, String userId, String advertsId) {
         try {
             String blobName = data.getOriginalFilename();
-            BlobClient storageBlobClient = this.blobServiceClient.getBlobContainerClient("adverts").getBlobClient(blobName);
+            BlobServiceClient clientBlob = this.getBlobClient();
+            BlobClient storageBlobClient = clientBlob.getBlobContainerClient("adverts").getBlobClient(blobName);
             storageBlobClient.upload(data.getInputStream(),data.getSize(), true);
             String url = storageBlobClient.getBlobUrl();
             return url;
@@ -38,5 +33,12 @@ public class UploadService {
             return "";
         }
     }
+
+    private BlobServiceClient getBlobClient(){
+        this.keyVault = new KeyVault();
+        return new BlobServiceClientBuilder().connectionString(this.keyVault.getSecret("storageblobConnectString")).buildClient();
+    }
+
+
 
 }

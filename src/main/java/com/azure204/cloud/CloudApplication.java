@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class CloudApplication {
 
 
-	@GetMapping("/")
+	@GetMapping("/")	
 	public ResponseEntity<String> home(){
 		return ResponseEntity.ok("Run from Azure");
 	} 

@@ -32,6 +32,8 @@ public class ChatGtpService {
 
     public Advert generate(String msn) throws URISyntaxException{
 
+        this.keyVaultSecrets = new KeyVault();
+
         RestTemplate restTemplate = new RestTemplate();
         String openAIKey =   keyVaultSecrets.getSecret("openiasecretkey");
 

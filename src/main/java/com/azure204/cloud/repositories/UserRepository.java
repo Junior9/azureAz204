@@ -20,26 +20,27 @@ import com.azure.cosmos.models.PartitionKey;
 import com.azure.cosmos.util.CosmosPagedIterable;
 import com.azure204.cloud.common.KeyVault;
 import com.azure204.cloud.model.User;
+
+import lombok.AllArgsConstructor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Repository
+@AllArgsConstructor
 public class UserRepository {
 
-    private CosmosContainer container;
-    private CosmosDatabase database;
-    private CosmosClient client;
+
     private final String databaseName = "az204CosmoDb";
     private final String containerName = "user";
     private KeyVault keyVaultSecrets;
     protected static Logger logger = LoggerFactory.getLogger(UserRepository.class);
 
-    public UserRepository(){
-        init();
-    }
 
 
-    public void init() {
+    public CosmosContainer getContainer() {
+        CosmosDatabase database;
+        CosmosClient client;
         keyVaultSecrets = new KeyVault();
 
         ArrayList<String> preferredRegions = new ArrayList<String>();
@@ -66,7 +67,8 @@ public class UserRepository {
             new CosmosContainerProperties(containerName, "/partitionKey");
 
         CosmosContainerResponse containerResponse = database.createContainerIfNotExists(containerProperties);
-        container = database.getContainer(containerResponse.getProperties().getId());
+
+        return database.getContainer(containerResponse.getProperties().getId());
     }
 
 
@@ -75,6 +77,8 @@ public class UserRepository {
 
         CosmosQueryRequestOptions queryOptions = new CosmosQueryRequestOptions();
         queryOptions.setQueryMetricsEnabled(true);
+        
+        CosmosContainer container = this.getContainer();
 
         CosmosPagedIterable<Object> result = container.queryItems(
             "SELECT * FROM c", queryOptions, Object.class);
@@ -83,6 +87,8 @@ public class UserRepository {
     }
 
     public CosmosPagedIterable<Object> getUserById(String id) {
+
+        CosmosContainer container = this.getContainer();
 
         CosmosQueryRequestOptions queryOptions = new CosmosQueryRequestOptions();
         queryOptions.setQueryMetricsEnabled(true);
@@ -94,6 +100,8 @@ public class UserRepository {
     }
 
     public void add(User user) {
+
+        CosmosContainer container = this.getContainer();
         CosmosItemResponse<User> respose = container.createItem(user);
         if(respose.getStatusCode() == StatusCodes.CREATED ||  respose.getStatusCode() == StatusCodes.OK){
             logger.info("[USER CREATED] -- " + user);
@@ -104,6 +112,8 @@ public class UserRepository {
 
 
     public void updateUser(User user) {
+
+        CosmosContainer container = this.getContainer();
         CosmosItemResponse<User> respose =container.upsertItem(user);
         if(respose.getStatusCode() == StatusCodes.CREATED ||  respose.getStatusCode() == StatusCodes.OK){
             logger.info("[USER UPDATED] -- " + user);
@@ -114,6 +124,7 @@ public class UserRepository {
 
     public void delete(String id ) {
         try{
+            CosmosContainer container = this.getContainer();
             CosmosItemResponse<Object> respose = container.deleteItem(id, new PartitionKey(id), new CosmosItemRequestOptions());
 
             if(respose.getStatusCode() == StatusCodes.NO_CONTENT){
@@ -124,8 +135,6 @@ public class UserRepository {
         }catch(Exception e){
             logger.error("[USER NOT DELETED]  id -- " + id + " Error : " + e.getMessage());
         }
-        
     }
-
 
 }

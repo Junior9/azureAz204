@@ -23,54 +23,23 @@ import com.azure.cosmos.util.CosmosPagedIterable;
 import com.azure204.cloud.common.KeyVault;
 import com.azure204.cloud.model.Advert;
 
+import lombok.AllArgsConstructor;
+
 
 
 @Repository
+@AllArgsConstructor
 public class AdvertRepository {
 
-    private CosmosContainer container;
-    private CosmosDatabase database;
-    private CosmosClient client;
     private final String databaseName = "az204CosmoDb";
     private final String containerName = "advert";
     private KeyVault keyVaultSecrets;
     protected static Logger logger = LoggerFactory.getLogger(UserRepository.class);
 
-    public AdvertRepository(){
-        init();
-    }
-
-    public void init() {
-        keyVaultSecrets = new KeyVault();
-        ArrayList<String> preferredRegions = new ArrayList<String>();
-        preferredRegions.add("West US");
-
-        String cosmoDbkey  = keyVaultSecrets.getSecret("cosmodb204key");
-        String cosmoDbHost  = keyVaultSecrets.getSecret("cosmodbhost");
-
-        //  Create sync client
-        client = new CosmosClientBuilder()
-            .endpoint(cosmoDbHost)
-            .key(cosmoDbkey)
-            .preferredRegions(preferredRegions)
-            .userAgentSuffix("CosmosDBJavaQuickstart")
-            .consistencyLevel(ConsistencyLevel.EVENTUAL)
-            .buildClient();
-
-
-        CosmosDatabaseResponse databaseResponse = client.createDatabaseIfNotExists(databaseName);
-        database = client.getDatabase(databaseResponse.getProperties().getId());
-        
-           //  Create container if not exists
-        CosmosContainerProperties containerProperties =
-            new CosmosContainerProperties(containerName, "/partitionKey");
-
-        CosmosContainerResponse containerResponse = database.createContainerIfNotExists(containerProperties);
-        container = database.getContainer(containerResponse.getProperties().getId());
-    }
 
     public CosmosPagedIterable<Object> getAdverts() {
 
+        CosmosContainer container = getContainer();
         CosmosQueryRequestOptions queryOptions = new CosmosQueryRequestOptions();
         queryOptions.setQueryMetricsEnabled(true);
 
@@ -82,6 +51,7 @@ public class AdvertRepository {
 
     public CosmosPagedIterable<Object> getAdvertsById(String id) {
 
+        CosmosContainer container = getContainer();
         CosmosQueryRequestOptions queryOptions = new CosmosQueryRequestOptions();
         queryOptions.setQueryMetricsEnabled(true);
 
@@ -92,6 +62,7 @@ public class AdvertRepository {
     }
 
     public Advert add(Advert advert) {
+        CosmosContainer container = getContainer();
         CosmosItemResponse<Advert> respose = container.createItem(advert);
         respose.getItem();
         if(respose.getStatusCode() == StatusCodes.CREATED ||  respose.getStatusCode() == StatusCodes.OK){
@@ -105,6 +76,7 @@ public class AdvertRepository {
 
 
     public void updateAdvert(Advert advert) {
+        CosmosContainer container = getContainer();
         CosmosItemResponse<Advert> respose =container.upsertItem(advert);
         if(respose.getStatusCode() == StatusCodes.CREATED ||  respose.getStatusCode() == StatusCodes.OK){
             logger.info("[ADVERT UPDATED] -- " + advert);
@@ -115,6 +87,7 @@ public class AdvertRepository {
 
     public void delete(String id ) {
         try{
+            CosmosContainer container = getContainer();
             CosmosItemResponse<Object> respose = container.deleteItem(id, new PartitionKey(id), new CosmosItemRequestOptions());
 
             if(respose.getStatusCode() == StatusCodes.NO_CONTENT){
@@ -126,6 +99,39 @@ public class AdvertRepository {
             logger.error("[ADVERT NOT DELETED]  id -- " + id + " Error : " + e.getMessage());
         }
         
+    }
+
+    private CosmosContainer getContainer(){
+
+        CosmosDatabase database;
+        CosmosClient client;
+        keyVaultSecrets = new KeyVault();
+        ArrayList<String> preferredRegions = new ArrayList<String>();
+        preferredRegions.add("West US");
+
+        String cosmoDbkey  = keyVaultSecrets.getSecret("cosmodb204key");
+        String cosmoDbHost  = keyVaultSecrets.getSecret("cosmodbhost");
+
+
+        //  Create sync client
+        client = new CosmosClientBuilder()
+            .endpoint(cosmoDbHost)
+            .key(cosmoDbkey)
+            .preferredRegions(preferredRegions)
+            .userAgentSuffix("CosmosDBJavaQuickstart")
+            .consistencyLevel(ConsistencyLevel.EVENTUAL)
+            .buildClient();
+
+        CosmosDatabaseResponse databaseResponse = client.createDatabaseIfNotExists(databaseName);
+        database = client.getDatabase(databaseResponse.getProperties().getId());
+        
+           //  Create container if not exists
+        CosmosContainerProperties containerProperties =
+            new CosmosContainerProperties(containerName, "/partitionKey");
+
+        CosmosContainerResponse containerResponse = database.createContainerIfNotExists(containerProperties);
+  
+        return database.getContainer(containerResponse.getProperties().getId());
     }
 
 
