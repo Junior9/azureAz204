@@ -12,7 +12,7 @@ import com.azure.security.keyvault.secrets.models.KeyVaultSecret;
 public class KeyVault {
 
     SecretClient secretClient = new SecretClientBuilder()
-    .vaultUrl("https://keyaz204vault.vault.azure.net/")
+    .vaultUrl("https://keyvaultaz204exam.vault.azure.net/")
     .credential(new DefaultAzureCredentialBuilder().build())
     .buildClient();
 

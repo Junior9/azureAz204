@@ -31,8 +31,8 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class AdvertRepository {
 
-    private final String databaseName = "az204CosmoDb";
-    private final String containerName = "advert";
+    private final String databaseName = "cosmodbaz204exam";
+    private final String containerName = "adverts";
     private KeyVault keyVaultSecrets;
     protected static Logger logger = LoggerFactory.getLogger(UserRepository.class);
 

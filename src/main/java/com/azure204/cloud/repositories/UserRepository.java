@@ -18,6 +18,7 @@ import com.azure.cosmos.models.CosmosItemResponse;
 import com.azure.cosmos.models.CosmosQueryRequestOptions;
 import com.azure.cosmos.models.PartitionKey;
 import com.azure.cosmos.util.CosmosPagedIterable;
+import com.azure.identity.DefaultAzureCredentialBuilder;
 import com.azure204.cloud.common.KeyVault;
 import com.azure204.cloud.model.User;
 
@@ -31,11 +32,10 @@ import org.slf4j.LoggerFactory;
 public class UserRepository {
 
 
-    private final String databaseName = "az204CosmoDb";
-    private final String containerName = "user";
+    private final String databaseName = "cosmodbaz204exam";
+    private final String containerName = "users";
     private KeyVault keyVaultSecrets;
     protected static Logger logger = LoggerFactory.getLogger(UserRepository.class);
-
 
 
     public CosmosContainer getContainer() {
@@ -48,6 +48,8 @@ public class UserRepository {
 
         String cosmoDbkey  = keyVaultSecrets.getSecret("cosmodb204key");
         String cosmoDbHost  = keyVaultSecrets.getSecret("cosmodbhost");
+
+        new DefaultAzureCredentialBuilder().build();
 
         //  Create sync client
         client = new CosmosClientBuilder()
@@ -99,15 +101,25 @@ public class UserRepository {
         return result;
     }
 
-    public void add(User user) {
+    public boolean add(User user) {
 
-        CosmosContainer container = this.getContainer();
-        CosmosItemResponse<User> respose = container.createItem(user);
-        if(respose.getStatusCode() == StatusCodes.CREATED ||  respose.getStatusCode() == StatusCodes.OK){
-            logger.info("[USER CREATED] -- " + user);
-        }else{
-            logger.error("[USER NOT CREATED] -- " + user);
+        try{
+            CosmosContainer container = this.getContainer();
+            CosmosItemResponse<User> respose = container.createItem(user);
+            if(respose.getStatusCode() == StatusCodes.CREATED ||  respose.getStatusCode() == StatusCodes.OK){
+                logger.info("[USER CREATED] -- " + user);
+                return true;
+            }else{
+                logger.error("[USER NOT CREATED] -- " + user);
+                return false;
+            }
+
+        }catch (Exception e){
+            e.hashCode();
+            logger.error("Error to add a user: " +  e.getMessage());
+            return false;
         }
+      
     }
 
 

@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 public class UserService {
 
     private UserRepository userRepository;
+    private EventHub eventHub;
 
     public CosmosPagedIterable<Object>  getUsers(){
         return this.userRepository.getUsers();
@@ -23,7 +24,10 @@ public class UserService {
     }
 
     public void addUser(User user){
-        this.userRepository.add(user);
+        boolean userAdded = this.userRepository.add(user);
+        if(userAdded){
+            this.eventHub.newUserNotification(user);
+        }
     }
 
     public void update(User user) {
@@ -33,5 +37,7 @@ public class UserService {
     public void delete(String id) {
         this.userRepository.delete(id);
     }
+
+
 
 }
