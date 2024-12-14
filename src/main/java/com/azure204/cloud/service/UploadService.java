@@ -22,7 +22,7 @@ public class UploadService {
         try {
             String blobName = data.getOriginalFilename();
             BlobServiceClient clientBlob = this.getBlobClient();
-            BlobClient storageBlobClient = clientBlob.getBlobContainerClient("adverts").getBlobClient(blobName);
+            BlobClient storageBlobClient = clientBlob.getBlobContainerClient("stgcontainerimg").getBlobClient(blobName);
             storageBlobClient.upload(data.getInputStream(),data.getSize(), true);
             String url = storageBlobClient.getBlobUrl();
             return url;
