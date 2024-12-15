@@ -34,7 +34,7 @@ public class AdvertRepository {
     private final String databaseName = "cosmodbaz204exam";
     private final String containerName = "adverts";
     private KeyVault keyVaultSecrets;
-    protected static Logger logger = LoggerFactory.getLogger(UserRepository.class);
+    protected static Logger logger = LoggerFactory.getLogger(AdvertRepository.class);
 
 
     public CosmosPagedIterable<Object> getAdverts() {
