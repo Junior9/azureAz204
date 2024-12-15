@@ -32,7 +32,7 @@ public class UserService {
           
         KeyVault keyVault = new KeyVault();
 
-        
+        /* 
         try {
             boolean useSsl = true;
             String cacheHostname = keyVault.getSecret("redishostname");
